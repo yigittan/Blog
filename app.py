@@ -9,6 +9,8 @@ from users.user_services import UserService
 from users.user_storages import UserPostgreStorage
 from posts.post_services import PostService
 from posts.post_storages import PostPostgreStorage
+from comments.comment_services import CommentService
+from comments.comment_storages import CommentMongoStorage
 from models.adress import Adress
 from models.user import User
 from models.post import Post
@@ -29,6 +31,9 @@ user_service = UserService(user_storage)
 # Post service and post postgre storage created
 post_storage = PostPostgreStorage(connection)
 post_service = PostService(post_storage)
+# Comment service and comment postgre storage created
+comment_storage = CommentMongoStorage(connection)
+comment_service = CommentService(comment_storage)
 
 
 def token_required(f):
@@ -92,8 +97,8 @@ def login():
 @token_required
 def post(current_user, current_id):
     if request.method == 'GET':
-        output = post_service.get_all_own_post(current_id)
-        return jsonify({'posts': output})
+        all_post = post_service.get_all_own_post(current_id)
+        return jsonify({'posts': all_post})
 
     if request.method == 'POST':
         response = request.get_json()
@@ -120,6 +125,19 @@ def delete_or_update_post(current_user, current_id, post_id):
             return jsonify({'message': 'success'})
         else:
             return jsonify({'message': 'Post not found for update'})
+
+
+@app.route('/user/<int:post_id>/comments', methods=['GET', 'POST'])
+@token_required
+def comment(current_user, current_id, post_id):
+    if request.method == 'GET':
+        comments = comment_service.get_all_comments(post_id)
+        return jsonify({'comments': comments})
+    if request.method == 'POST':
+        print(type(current_id))
+        response = request.get_json()
+        content = response['content']
+        return comment_service.create_comment(content, post_id, current_id)
 
 
 @app.route('/user')

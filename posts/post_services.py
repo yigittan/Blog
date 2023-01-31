@@ -30,4 +30,4 @@ class PostService:
         if self.get_post_by_id(post_id):
             return self.storage.update_post(title, content, post_id)
         else:
-            return None
+            return jsonify({'message': 'Post not found for update'})

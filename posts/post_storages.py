@@ -49,4 +49,4 @@ class PostPostgreStorage:
         update_data = {'title': title, 'content': content, 'post_id': post_id}
         cursor.execute(query, update_data)
         self.connection.commit()
-        return 'okey'
+        return {'message': 'Update success'}

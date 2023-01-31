@@ -109,7 +109,7 @@ def post(current_user, current_id):
 def delete_or_update_post(current_user, current_id, post_id):
     if request.method == 'DELETE':
         if post_service.get_post_by_id(post_id):
-            return str(post_id)
+            return post_service.delete_post_by_id(post_id)
         return jsonify({'message': 'Post not found for delete'})
 
     if request.method == 'PUT':
@@ -132,7 +132,8 @@ def create_token(user_id, user_name, user_email):
     token = jwt.encode({
         'id': user_id,
         'user_email': user_email,
-        'user_name': user_name
+        'user_name': user_name,
+        'exp': (datetime.now() + timedelta(seconds=30)).timestamp()
     }, key=app.secret_key).decode('UTF-8')
     return token
 

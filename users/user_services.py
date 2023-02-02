@@ -1,4 +1,5 @@
 import jwt
+from models.user import User
 
 
 class UserService:
@@ -14,10 +15,8 @@ class UserService:
     def get_user_by_email(self, email):
         return self.storage.get_user_by_email(email)
 
-    def check_password(self, user, candidate_password):
-        if candidate_password == user.password:
-            return True
-        return False
+    def check_password(self, user: User, candidate_password):
+        return candidate_password == user.password
 
     def get_user_by_id(self, id):
         return self.storage.get_user_by_id(id)

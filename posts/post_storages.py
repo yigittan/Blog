@@ -7,41 +7,41 @@ class PostPostgreStorage:
 
     def insert_post(self, post: Post):
         cursor = self.connection.cursor()
-        query = """INSERT INTO "post" (title, content, user_id) VALUES(%s, %s, %s) RETURNING id"""
-        record_data = (post.title, post.content, post.user_id)
+        query = """INSERT INTO "post" (title, content, user_id, likes) VALUES(%s, %s, %s, %s) RETURNING id"""
+        record_data = (post.title, post.content, post.user_id, post.likes)
         cursor.execute(query, record_data)
         self.connection.commit()
-        post_id = str(cursor.fetchone()[0])
-        return post_id
+        return str(cursor.fetchone()[0])
+
+    def get_all_posts(self):
+        cursor = self.connection.cursor()
+        query = """SELECT * FROM "post" """
+        cursor.execute(query)
+        return cursor.fetchall()
 
     def get_all_own_post(self, user_id):
         cursor = self.connection.cursor()
-        query = """SELECT * FROM "post" WHERE user_id = %(bar)s"""
-        select_data = {'bar': user_id}
+        query = """SELECT * FROM "post" WHERE user_id = %(user_id)s"""
+        select_data = {'user_id': user_id}
         cursor.execute(query, select_data)
-        all_post = cursor.fetchall()
-        return all_post
+        return cursor.fetchall()
 
     def get_post_by_id(self, post_id):
-        print(post_id)
         cursor = self.connection.cursor()
-        query = """SELECT * FROM "post" WHERE id =%(bar)s"""
-        get_data = {'bar': post_id}
+        query = """SELECT * FROM "post" WHERE id =%(post_id)s"""
+        get_data = {'post_id': post_id}
         cursor.execute(query, get_data)
-        data = cursor.fetchone()
-        print(data)
-        if data is None:
-            return None
-        post = Post(data[1], data[2], data[3])
-        return post
+        post_data = cursor.fetchone()
+        if not post_data:
+            raise Exception('Post data not found')
+        return Post(post_data[1], post_data[2], post_data[3], post_data[4])
 
     def delete_post_by_id(self, post_id):
         cursor = self.connection.cursor()
-        query = """DELETE FROM "post" WHERE id = %(bar)s"""
-        deleted_id = {'bar': post_id}
+        query = """DELETE FROM "post" WHERE id = %(post_id)s"""
+        deleted_id = {'post_id': post_id}
         cursor.execute(query, deleted_id)
         self.connection.commit()
-        return str(post_id)
 
     def update_post(self, title, content, post_id):
         cursor = self.connection.cursor()
@@ -49,4 +49,10 @@ class PostPostgreStorage:
         update_data = {'title': title, 'content': content, 'post_id': post_id}
         cursor.execute(query, update_data)
         self.connection.commit()
-        return {'message': 'Update success'}
+
+    def update_post_likes(self, post_id, likes):
+        cursor = self.connection.cursor()
+        query = """UPDATE "post" SET likes=%(likes)s WHERE id =%(post_id)s"""
+        update_data = {'likes': likes, 'post_id': post_id}
+        cursor.execute(query, update_data)
+        self.connection.commit()

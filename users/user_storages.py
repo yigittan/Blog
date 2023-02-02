@@ -25,7 +25,6 @@ class UserPostgreStorage:
                        adress.building, adress.zip_code, adress.user_id)
         cursor.execute(query, record_data)
         self.connection.commit()
-        return None
 
     def get_user_by_email(self, email):
         cursor = self.connection.cursor()
@@ -33,16 +32,18 @@ class UserPostgreStorage:
         record_data = {'email': email}
         cursor.execute(query, record_data)
         data = cursor.fetchone()
-        user = User(data[1], data[2], data[3], data[4])
-        user_id = data[0]
-        return user, user_id
+        try:
+            return User(data[1], data[2], data[3], data[4], data[0])
+        except:
+            return
 
     def get_user_by_id(self, id):
         cursor = self.connection.cursor()
-        query = """SELECT * FROM "user" WHERE id=%(bar)s"""
-        record_data = {'bar': id}
+        query = """SELECT * FROM "user" WHERE id=%(id)s"""
+        record_data = {'id': id}
         cursor.execute(query, record_data)
         data = cursor.fetchone()
-        user = User(data[1], data[2], data[3], data[4])
-        user_id = data[0]
-        return user, user_id
+        try:
+            return User(data[1], data[2], data[3], data[4], data[0])
+        except:
+            return
